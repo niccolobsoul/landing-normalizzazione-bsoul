@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bSoul — Normalizzazione Fisiologica</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Belleza&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        'bsoul-primary': '#bcc482',
+        'bsoul-green-mid': '#656d4a',
+        'bsoul-green-dark': '#414833',
+        'bsoul-cream': '#f2e9e4',
+        'bsoul-beige': '#a68a64',
+        'bsoul-brown': '#582f0e',
+        'bsoul-gray-text': '#6e6259',
+        'bsoul-gray-light': '#a99f97',
+      },
+      fontFamily: {
+        'belleza': ['Belleza', 'serif'],
+        'montserrat': ['Montserrat', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Montserrat', sans-serif; color: #6e6259; overflow-x: hidden; }
+
+  .reveal { opacity: 0; transform: translateY(30px); }
+  .reveal-left { opacity: 0; transform: translateX(-60px); }
+  .reveal-right { opacity: 0; transform: translateX(60px); }
+  .reveal-scale { opacity: 0; transform: scale(0.95); }
+  .reveal-words { opacity: 1; } /* words animate individually */
+  .reveal-words .word { display: inline-block; opacity: 0; transform: translateY(20px); }
+
+  .img-placeholder {
+    background: linear-gradient(135deg, rgba(188,196,130,0.12) 0%, rgba(101,109,74,0.08) 100%);
+    border: 2px dashed rgba(188,196,130,0.4);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #656d4a;
+    font-size: 0.75em;
+    font-weight: 500;
+    letter-spacing: 1px;
+    padding: 20px;
+  }
+
+  /* Video placeholder con play icon */
+  .video-placeholder {
+    background: linear-gradient(135deg, #a68a64 0%, #656d4a 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .video-placeholder::after {
+    content: '';
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    backdrop-filter: blur(4px);
+    position: absolute;
+  }
+  .video-placeholder::before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 16px solid rgba(255,255,255,0.9);
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    position: absolute;
+    z-index: 1;
+    margin-left: 4px;
+  }
+
+  /* Press marquee */
+  .marquee-wrapper {
+    overflow: hidden;
+    width: 100%;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  }
+  .marquee-track {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    width: max-content;
+    animation: marquee-scroll 40s linear infinite;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  .marquee-track img {
+    height: 38px;
+    width: auto;
+    object-fit: contain;
+    opacity: 0.7;
+    transition: all 400ms ease;
+  }
+  .marquee-track img:hover { opacity: 1; }
+  @keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Pain list bullets */
+  .pain-bullet { position: relative; padding-left: 25px; }
+  .pain-bullet::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: #bcc482;
+    border-radius: 50%;
+    position: absolute;
+    left: 0; top: 8px;
+  }
+
+  /* Step number */
+  .step-number {
+    width: 60px; height: 60px;
+    background: #656d4a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+    font-family: 'Belleza', serif;
+    font-size: 1.5em;
+  }
+
+  /* CTA buttons */
+  .bsoul-btn {
+    background: #656d4a;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95em;
+    letter-spacing: 1px;
+    padding: 16px 40px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    transition: all 300ms ease;
+  }
+  .bsoul-btn:hover {
+    background: #414833;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(65,72,51,0.25);
+  }
+  .bsoul-btn-light {
+    background: #bcc482;
+    color: #414833;
+  }
+  .bsoul-btn-light:hover { background: #cdd493; }
+
+  .stat-number { font-family: 'Belleza', serif; }
+
+  /* Typeform box */
+  .typeform-box {
+    background: #656d4a;
+    border-radius: 16px;
+    padding: 40px 30px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* Card hover */
+  .hover-lift { transition: transform 300ms ease, box-shadow 300ms ease; }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(65,72,51,0.1);
+  }
+
+  /* ============================================================
+     KIT DECOMPOSITION
+     ============================================================ */
+  .kit-section {
+    position: relative;
+    height: 250vh;
+    background: #fff;
+  }
+  .kit-container {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .kit-stage {
+    position: relative;
+    width: 900px;
+    height: 400px;
+  }
+  .kit-full {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px;
+    height: auto;
+    z-index: 5;
+  }
+  .product-single {
+    position: absolute;
+    opacity: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .product-single img {
+    width: auto;
+    display: block;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 20px rgba(0,0,0,0.1));
+  }
+  .product-label {
+    margin-top: 10px;
+    font-family: 'Belleza', serif;
+    font-size: 0.75em;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #414833;
+    white-space: nowrap;
+    opacity: 0;
+  }
+  .product-cleanser { left: 30px; bottom: 80px; }
+  .product-cleanser img { height: 210px; }
+  .product-essential { left: 260px; bottom: 80px; }
+  .product-essential img { height: 185px; }
+  .product-comfort { left: 500px; bottom: 80px; }
+  .product-comfort img { height: 115px; }
+  .product-nightmask { left: 700px; bottom: 80px; }
+  .product-nightmask img { height: 135px; }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .scroll-hint span {
+    font-size: 0.7em;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #656d4a;
+    opacity: 0.5;
+  }
+  .scroll-hint .arrow {
+    width: 16px; height: 16px;
+    border-right: 2px solid #656d4a;
+    border-bottom: 2px solid #656d4a;
+    transform: rotate(45deg);
+    opacity: 0.4;
+    animation: bounce-arrow 1.5s ease-in-out infinite;
+  }
+  @keyframes bounce-arrow {
+    0%, 100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(45deg) translateY(5px); }
+  }
+
+  /* Photo mosaic */
+  .mosaic-img {
+    overflow: hidden;
+    border-radius: 12px;
+  }
+  .mosaic-img img,
+  .mosaic-img .img-placeholder {
+    transition: transform 500ms ease;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mosaic-img:hover img,
+  .mosaic-img:hover .img-placeholder {
+    transform: scale(1.05);
+  }
+
+  /* Timeline connector */
+  .timeline-line {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 4px;
+    background: #d4ccc0;
+    z-index: 0;
+    border-radius: 2px;
+  }
+  .timeline-fill {
+    height: 100%;
+    width: 0%;
+    background: #bcc482;
+    border-radius: 2px;
+    box-shadow: 0 0 12px rgba(188,196,130,0.5);
+  }
+
+  /* Reviews marquee */
+  .reviews-marquee-track {
+    width: max-content;
+    animation: reviews-marquee 80s linear infinite;
+  }
+  .reviews-marquee-track:hover {
+    animation-play-state: paused;
+  }
+  @keyframes reviews-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Clinical study marquee */
+  .clinical-marquee-track {
+    width: max-content;
+    animation: clinical-marquee 50s linear infinite;
+  }
+  .clinical-marquee-track:hover {
+    animation-play-state: paused;
+  }
+  @keyframes clinical-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Video marquee */
+  .video-marquee-track {
+    width: max-content;
+    animation: video-marquee 60s linear infinite;
+  }
+  .video-marquee-track:hover {
+    animation-play-state: paused;
+  }
+  @keyframes video-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @media (max-width: 768px) {
+    .kit-stage {
+      width: 300px;
+      height: 380px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 0;
+    }
+    .kit-full { width: 260px; }
+
+    /* 2x2 grid centered */
+    .product-cleanser { left: 15px; bottom: 195px; }
+    .product-cleanser img { height: 135px; }
+    .product-essential { left: 170px; bottom: 195px; }
+    .product-essential img { height: 120px; }
+    .product-comfort { left: 35px; bottom: 30px; }
+    .product-comfort img { height: 85px; }
+    .product-nightmask { left: 165px; bottom: 30px; }
+    .product-nightmask img { height: 95px; }
+
+    .product-label { font-size: 0.6em; letter-spacing: 1px; }
+
+    .kit-container { padding: 0 20px; }
+  }
+</style>
+</head>
+
+<body>
+
+
+<!-- ============================================================
+     SEZIONE 1: PRESS BAR
+     ============================================================ -->
+<section class="bg-white py-5 px-0">
+  <p class="text-[0.7em] font-semibold tracking-[3px] uppercase text-bsoul-gray-light text-center mb-4">Visto su:</p>
+  <div class="marquee-wrapper">
+    <div class="marquee-track">
+      <img src="press-logos/01-vanity-fair.png" alt="Vanity Fair">
+      <img src="press-logos/02-elle.png" alt="Elle">
+      <img src="press-logos/03-il-sole-24-ore.png" alt="Il Sole 24 Ore">
+      <img src="press-logos/04-panorama.png" alt="Panorama">
+      <img src="press-logos/05-io-donna.png" alt="iO Donna">
+      <img src="press-logos/06-ansa.png" alt="ANSA">
+      <img src="press-logos/07-gazzetta-dello-sport.png" alt="La Gazzetta dello Sport">
+      <img src="press-logos/08-amica.png" alt="Amica">
+      <img src="press-logos/09-rtl-102-5.png" alt="RTL 102.5">
+      <img src="press-logos/10-rds.png" alt="RDS">
+      <img src="press-logos/11-esquire.png" alt="Esquire">
+      <img src="press-logos/12-pambianco-news.png" alt="Pambianco News">
+      <img src="press-logos/13-luce.png" alt="Luce!">
+      <img src="press-logos/14-361-magazine.png" alt="361 Magazine">
+      <img src="press-logos/15-my-personal-trainer.png" alt="myPersonal Trainer">
+      <img src="press-logos/16-sanihelp.png" alt="Sanihelp.it">
+      <img src="press-logos/17-cinque-colonne.png" alt="Cinque Colonne Magazine">
+      <img src="press-logos/01-vanity-fair.png" alt="Vanity Fair">
+      <img src="press-logos/02-elle.png" alt="Elle">
+      <img src="press-logos/03-il-sole-24-ore.png" alt="Il Sole 24 Ore">
+      <img src="press-logos/04-panorama.png" alt="Panorama">
+      <img src="press-logos/05-io-donna.png" alt="iO Donna">
+      <img src="press-logos/06-ansa.png" alt="ANSA">
+      <img src="press-logos/07-gazzetta-dello-sport.png" alt="La Gazzetta dello Sport">
+      <img src="press-logos/08-amica.png" alt="Amica">
+      <img src="press-logos/09-rtl-102-5.png" alt="RTL 102.5">
+      <img src="press-logos/10-rds.png" alt="RDS">
+      <img src="press-logos/11-esquire.png" alt="Esquire">
+      <img src="press-logos/12-pambianco-news.png" alt="Pambianco News">
+      <img src="press-logos/13-luce.png" alt="Luce!">
+      <img src="press-logos/14-361-magazine.png" alt="361 Magazine">
+      <img src="press-logos/15-my-personal-trainer.png" alt="myPersonal Trainer">
+      <img src="press-logos/16-sanihelp.png" alt="Sanihelp.it">
+      <img src="press-logos/17-cinque-colonne.png" alt="Cinque Colonne Magazine">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 2: HERO
+     ============================================================ -->
+<section class="relative min-h-[70vh] md:min-h-[80vh] flex items-center justify-center px-6 overflow-hidden">
+  <!-- Video background -->
+  <video class="absolute inset-0 w-full h-full object-cover" autoplay muted loop playsinline poster="">
+    <!-- Sostituire src con il video reale -->
+    <source src="video/hero-normalizzazione.mp4" type="video/mp4">
+  </video>
+  <!-- Fallback background (visibile finche' non c'e' il video) -->
+  <div class="absolute inset-0" style="background: radial-gradient(ellipse at 30% 50%, rgba(188,196,130,0.25) 0%, transparent 60%), radial-gradient(ellipse at 70% 30%, rgba(101,109,74,0.1) 0%, transparent 50%), #bcc482;"></div>
+  <!-- Overlay verde per leggibilita' -->
+  <div class="absolute inset-0 bg-bsoul-primary/60"></div>
+
+  <div class="relative z-10 max-w-3xl mx-auto text-center py-28 md:py-36">
+    <div class="reveal">
+      <img src="images/logo-bsoul-bianco.svg" alt="bSoul" class="w-48 md:w-56 mx-auto mb-8">
+      <h1 class="font-belleza text-2xl md:text-4xl tracking-[4px] uppercase text-white leading-relaxed" style="text-shadow: 0 1px 10px rgba(0,0,0,0.08);">
+        La vera longevit&agrave; della pelle<br>nasce dall'equilibrio
+      </h1>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SALES LETTER — Layout dinamico e asimmetrico
+     ============================================================ -->
+
+<!-- Blocco 1: Hook grande — frase d'impatto full viewport -->
+<section class="bg-bsoul-cream min-h-[60vh] flex items-center px-6 py-20">
+  <div class="max-w-5xl mx-auto">
+    <p class="reveal-words font-belleza text-[2rem] md:text-[3.2rem] leading-[1.4] tracking-wide uppercase text-bsoul-green-dark">
+      Se hai provato diversi cosmetici o routine e niente sembra funzionare, <span class="text-bsoul-primary">sei nel posto giusto.</span>
+    </p>
+  </div>
+</section>
+
+<!-- Blocco 2: Split — immagine smarginata + testo -->
+<section class="bg-bsoul-cream overflow-hidden">
+  <div class="flex flex-col md:flex-row items-stretch">
+    <!-- Immagine smarginata a sinistra — esce dal margine -->
+    <div class="md:w-[55%] reveal-left">
+      <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=800&q=80" alt="Donna che si prende cura della pelle" class="w-full h-full min-h-[400px] md:min-h-[500px] object-cover" style="border-radius: 0 16px 16px 0;">
+    </div>
+    <!-- Testo a destra con padding generoso -->
+    <div class="md:w-[45%] flex items-center px-8 md:px-16 py-16 md:py-0">
+      <div class="reveal">
+        <p class="text-[1.15em] md:text-[1.35em] leading-[2]">
+          Non perch&eacute; facciamo miracoli o false promesse, ma perch&eacute; abbiamo un unico obiettivo: <strong class="text-bsoul-green-dark">ristabilire l'equilibrio della pelle</strong> e la sua capacit&agrave; di auto rigenerarsi.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Blocco 3: Testo grande offset a destra -->
+<section class="bg-white py-28 md:py-40 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="md:ml-[20%] max-w-2xl">
+      <p class="reveal text-[1.15em] md:text-[1.35em] leading-[2] mb-12">
+        Quando la barriera cutanea &egrave; in squilibrio nessun prodotto cosmetico, anche il migliore, pu&ograve; darti i risultati che potrebbe e che desideri.
+      </p>
+      <p class="reveal text-[1.15em] md:text-[1.35em] leading-[2]">
+        Con una pelle in squilibrio &egrave; come se tutto quello che applichi non riuscisse a <em>"penetrare"</em> e lavorare per e con la tua pelle. Dopo qualche ora la pelle tira di nuovo e <strong class="text-bsoul-green-dark">niente cambia realmente</strong>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Blocco 4: Pull quote tipografica -->
+<section class="bg-bsoul-green-dark py-20 md:py-28 px-6">
+  <div class="max-w-5xl mx-auto">
+    <p class="reveal-scale font-belleza text-[1.8rem] md:text-[3rem] leading-[1.3] tracking-wide uppercase text-bsoul-primary text-center">
+      Niente cambia realmente
+    </p>
+  </div>
+</section>
+
+<!-- Blocco 5: Perche' succede — immagine a destra smarginata -->
+<section class="bg-white overflow-hidden">
+  <div class="flex flex-col md:flex-row items-stretch">
+    <div class="md:w-[50%] flex items-center px-8 md:px-16 py-16 md:py-28">
+      <div>
+        <h2 class="reveal font-belleza text-2xl md:text-[2.5rem] tracking-wide uppercase text-bsoul-green-dark mb-10 leading-tight">
+          Perch&eacute; succede<br>questo?
+        </h2>
+        <p class="reveal text-[1.1em] md:text-[1.25em] leading-[2] mb-10">
+          Con il passare degli anni, e ancora di pi&ugrave; in peri-menopausa e post menopausa, il ricambio naturale della nostra pelle rallenta, rendendo lo strato superficiale pi&ugrave; rigido, ruvido e spesso.
+        </p>
+        <p class="reveal font-semibold text-bsoul-green-dark text-[1.1em] mb-6">Questo si traduce in:</p>
+        <div class="space-y-4">
+          <p class="reveal pain-bullet font-medium text-bsoul-green-dark text-[1.15em] md:text-[1.25em]">Pelle spenta</p>
+          <p class="reveal pain-bullet font-medium text-bsoul-green-dark text-[1.15em] md:text-[1.25em]">Rughe pi&ugrave; evidenti</p>
+          <p class="reveal pain-bullet font-medium text-bsoul-green-dark text-[1.15em] md:text-[1.25em]">Perdita di compattezza e tono</p>
+        </div>
+      </div>
+    </div>
+    <div class="md:w-[50%] reveal-right">
+      <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&q=80" alt="Donna matura, sguardo diretto" class="w-full h-full min-h-[400px] md:min-h-[600px] object-cover" style="border-radius: 16px 0 0 16px;">
+    </div>
+  </div>
+</section>
+
+<!-- Blocco 6: L'errore — testo centrato stretto + immagine panoramica full-bleed -->
+<section class="bg-bsoul-cream py-28 md:py-40 px-6">
+  <div class="max-w-xl mx-auto mb-16">
+    <p class="reveal text-[1.15em] md:text-[1.35em] leading-[2] text-center">
+      L'istinto, incoraggiato dal trend del momento, &egrave; levigare ed esfoliare con peeling chimici, retinoidi e scrub di vario tipo, ma cos&igrave; facendo non facciamo altro che <strong class="text-bsoul-green-dark">indebolire un equilibrio gi&agrave; compromesso</strong>.
+    </p>
+  </div>
+</section>
+
+
+<!-- Blocco 7: Continuo errore — offset a sinistra -->
+<section class="bg-white py-28 md:py-40 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="max-w-2xl">
+      <p class="reveal text-[1.15em] md:text-[1.35em] leading-[2]">
+        La pelle in menopausa, ma gi&agrave; da 10 anni prima, diventa pi&ugrave; sottile, pi&ugrave; sensibile ai raggi solari, pi&ugrave; reattiva, dando chiari segnali di allarme, a cui seguono rughe, pelle stanca, spenta e sempre meno tonica.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Blocco 8: L'unico obiettivo — full dark, tipografia grande -->
+<section class="relative min-h-[80vh] flex items-center px-6 overflow-hidden" style="background: radial-gradient(ellipse at 20% 80%, rgba(101,109,74,0.4) 0%, transparent 50%), radial-gradient(ellipse at 90% 20%, rgba(188,196,130,0.08) 0%, transparent 40%), #414833;">
+  <div class="max-w-5xl mx-auto w-full py-28 md:py-40">
+    <h2 class="reveal font-belleza text-[1.5rem] md:text-[2rem] tracking-[6px] uppercase text-bsoul-primary/40 mb-6">
+      L'unico obiettivo
+    </h2>
+    <p class="reveal text-white text-[1.3em] md:text-[1.6em] leading-[1.9] max-w-2xl mb-20">
+      Il primo e pi&ugrave; importante, se desideri un reale miglioramento e una pelle pi&ugrave; longeva, prima di qualsiasi prodotto specifico per rughe e tono, dovrebbe essere <strong class="text-bsoul-primary">ristabilire l'equilibrio e il naturale ricambio cellulare</strong>.
+    </p>
+    <div class="reveal md:ml-[30%] max-w-xl">
+      <div class="w-20 h-[2px] bg-bsoul-primary/40 mb-10"></div>
+      <p class="text-bsoul-primary text-[1.3em] md:text-[1.6em] leading-[1.9]">
+        Sar&agrave; proprio grazie al nuovo equilibrio che la pelle ritrova la sua naturale capacit&agrave; di auto rigenerarsi.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 8: KIT DECOMPOSITION (ANIMAZIONE)
+     ============================================================ -->
+<section id="kit-normalizzazione" class="kit-section">
+  <div class="kit-container">
+    <h2 class="font-belleza text-2xl md:text-3xl tracking-wide uppercase text-bsoul-green-dark mb-2 text-center">L'eroe per un nuovo equilibrio</h2>
+    <p class="text-bsoul-green-mid font-medium tracking-wide text-sm mb-10 text-center">Il Kit di Normalizzazione Fisiologica</p>
+
+    <div class="kit-stage">
+      <img class="kit-full" src="images/kit-completo.png" alt="Kit Normalizzazione bSoul">
+
+      <div class="product-single product-cleanser">
+        <img src="images/hydra-milk-cleanser.png" alt="Hydra Milk Cleanser">
+        <span class="product-label">Hydra Milk Cleanser</span>
+      </div>
+      <div class="product-single product-essential">
+        <img src="images/hydra-essential.png" alt="Hydra Essential FA">
+        <span class="product-label">Hydra Essential FA</span>
+      </div>
+      <div class="product-single product-comfort">
+        <img src="images/hydra-comfort.png" alt="Hydra Comfort">
+        <span class="product-label">Hydra Comfort</span>
+      </div>
+      <div class="product-single product-nightmask">
+        <img src="images/hydra-night-mask.png" alt="Hydra Night Mask">
+        <span class="product-label">Hydra Night Mask</span>
+      </div>
+    </div>
+
+    <div class="scroll-hint">
+      <span>Scorri</span>
+      <div class="arrow"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 9: 3 STEP
+     ============================================================ -->
+<section class="bg-bsoul-cream py-20 md:py-28 px-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="reveal text-center mb-14">
+      <h2 class="font-belleza text-2xl md:text-3xl tracking-wide uppercase text-bsoul-green-dark mb-3">
+        Un nuovo equilibrio in 3 step
+      </h2>
+      <p class="text-sm text-bsoul-gray-text">Cosa succede durante la normalizzazione fisiologica?</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+      <!-- Timeline line (desktop only) -->
+      <div class="timeline-line hidden md:block">
+        <div class="timeline-fill" id="timelineFill"></div>
+      </div>
+
+      <div class="text-center reveal hover-lift p-8 rounded-2xl relative z-10">
+        <div class="step-number">1</div>
+        <h3 class="font-belleza text-lg tracking-widest uppercase text-bsoul-green-dark mb-1">Reset</h3>
+        <p class="text-bsoul-primary text-sm font-semibold tracking-widest uppercase mb-4">Primi 7 giorni</p>
+        <p class="text-sm leading-relaxed">Senti la pelle che inizia a rispondere diversamente.</p>
+      </div>
+
+      <div class="text-center reveal hover-lift p-8 rounded-2xl relative z-10">
+        <div class="step-number">2</div>
+        <h3 class="font-belleza text-lg tracking-widest uppercase text-bsoul-green-dark mb-1">Nuovo strato</h3>
+        <p class="text-bsoul-primary text-sm font-semibold tracking-widest uppercase mb-4">Dal 7&deg; al 30&deg; giorno</p>
+        <p class="text-sm leading-relaxed">La pelle fa il suo primo nuovo strato e appare piu' morbida e luminosa.</p>
+      </div>
+
+      <div class="text-center reveal hover-lift p-8 rounded-2xl relative z-10">
+        <div class="step-number">3</div>
+        <h3 class="font-belleza text-lg tracking-widest uppercase text-bsoul-green-dark mb-1">Rigenerazione</h3>
+        <p class="text-bsoul-primary text-sm font-semibold tracking-widest uppercase mb-4">Dal 30&deg; al 60&deg; giorno</p>
+        <p class="text-sm leading-relaxed">La pelle sara' rigenerata.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 10: DOPO LA NORMALIZZAZIONE
+     ============================================================ -->
+<section class="bg-white py-20 md:py-28 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex flex-col md:flex-row items-center gap-10 md:gap-16">
+      <div class="flex-1 reveal">
+        <h2 class="font-belleza text-2xl md:text-3xl tracking-wide uppercase text-bsoul-green-dark mb-6">
+          Cosa succede dopo la normalizzazione?
+        </h2>
+        <p class="leading-[1.8] mb-5">
+          Dal 60&deg; giorno inizia il <strong class="text-bsoul-green-dark">cambiamento strutturale della pelle</strong>. Dopo la normalizzazione fisiologica la tua pelle e' pronta alla fase 2.
+        </p>
+        <p class="leading-[1.8]">
+          Nella fase 2 ci focalizzeremo sul <strong class="text-bsoul-green-dark">tuo tipo di invecchiamento</strong>. Non invecchiamo tutte nello stesso modo: alcune hanno piu' rughe, altre piu' cedimenti, oppure alcune aree invecchiano prima delle altre zone del viso.
+        </p>
+      </div>
+      <div class="flex-1 reveal">
+        <img src="https://images.unsplash.com/photo-1491349174775-aaafddd81942?w=800&q=80" alt="Donna matura sorridente" class="w-full aspect-[4/3] object-cover rounded-2xl">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 11: BEAUTY EXPERT
+     ============================================================ -->
+<section class="bg-bsoul-cream py-20 md:py-28 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex flex-col md:flex-row items-center gap-10 md:gap-16">
+      <div class="flex-1 reveal">
+        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=80" alt="Beauty Expert bSoul" class="w-full aspect-[3/4] object-cover rounded-2xl">
+      </div>
+      <div class="flex-1 reveal">
+        <h2 class="font-belleza text-2xl md:text-3xl tracking-wide uppercase text-bsoul-green-dark mb-6">
+          Come faccio a sapere se sto facendo bene?
+        </h2>
+        <p class="leading-[1.8] mb-5">
+          Fin dal primo giorno di normalizzazione sei seguita da una <strong class="text-bsoul-green-dark">Beauty Expert con esperienza pluriennale</strong> nel mondo beauty, in particolare sull'invecchiamento cutaneo.
+        </p>
+        <p class="leading-[1.8] mb-5">
+          Ti seguira' passo passo indicandoti anche le migliori routine di auto-massaggio, video tutorial semplici da eseguire a casa, <strong class="text-bsoul-green-dark">5 minuti al giorno</strong> durante la routine cosmetica.
+        </p>
+        <p class="leading-[1.8] mb-5">
+          Non sei mai sola: ogni dubbio, ogni passaggio ha una risposta pronta e personalizzata per <strong class="text-bsoul-green-dark">2 mesi</strong>.
+        </p>
+        <p class="leading-[1.8] mb-6 text-center">
+          Puoi comunicare con la tua Beauty Expert via:
+        </p>
+        <div class="flex gap-10 items-start justify-center">
+          <!-- Email -->
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-16 h-16 rounded-full bg-[#EA4335]/10 flex items-center justify-center">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#EA4335" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13 2 4"/></svg>
+            </div>
+            <span class="text-xs font-medium text-bsoul-green-dark tracking-wide">Email</span>
+          </div>
+          <!-- WhatsApp -->
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-16 h-16 rounded-full bg-[#25D366]/10 flex items-center justify-center">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            </div>
+            <span class="text-xs font-medium text-bsoul-green-dark tracking-wide">WhatsApp</span>
+          </div>
+          <!-- Video consulenza -->
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-16 h-16 rounded-full bg-[#4A90D9]/10 flex items-center justify-center">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4A90D9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="14" height="14" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg>
+            </div>
+            <span class="text-xs font-medium text-bsoul-green-dark tracking-wide text-center">Video<br>Consulenza</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 12: PRODOTTI + CERTIFICAZIONI
+     ============================================================ -->
+<section class="bg-white py-20 md:py-28 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center reveal mb-12">
+      <h3 class="font-semibold text-bsoul-green-dark text-[1.15em] mb-3">Riusciro' a seguire tutto?</h3>
+      <p class="leading-[1.8] max-w-xl mx-auto">
+        Questa e' una domanda frequente, poiche' un approccio nuovo talvolta fa sembrare le cose un po' piu' complicate. Ma e' l'esatto contrario!
+      </p>
+      <p class="font-semibold text-bsoul-green-dark mt-4">Nel kit troverai:</p>
+    </div>
+
+    <!-- 4 prodotti -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+      <div class="text-center reveal hover-lift p-6 rounded-2xl">
+        <div class="h-48 flex items-end justify-center mb-5">
+          <img src="images/hydra-milk-cleanser.png" alt="Hydra Milk Cleanser" class="h-44 mx-auto" style="filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));">
+        </div>
+        <h3 class="font-belleza text-sm md:text-base tracking-wider uppercase text-bsoul-green-dark mb-1">Hydra Milk Cleanser</h3>
+        <p class="text-bsoul-primary text-xs font-medium tracking-widest uppercase">La detersione fisiologica</p>
+      </div>
+
+      <div class="text-center reveal hover-lift p-6 rounded-2xl">
+        <div class="h-48 flex items-end justify-center mb-5">
+          <img src="images/hydra-essential.png" alt="Hydra Essential FA" class="h-40 mx-auto" style="filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));">
+        </div>
+        <h3 class="font-belleza text-sm md:text-base tracking-wider uppercase text-bsoul-green-dark mb-1">Hydra Essential FA</h3>
+        <p class="text-bsoul-primary text-xs font-medium tracking-widest uppercase">Il siero riequilibrante</p>
+      </div>
+
+      <div class="text-center reveal hover-lift p-6 rounded-2xl">
+        <div class="h-48 flex items-end justify-center mb-5">
+          <img src="images/hydra-comfort.png" alt="Hydra Comfort" class="h-28 mx-auto" style="filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));">
+        </div>
+        <h3 class="font-belleza text-sm md:text-base tracking-wider uppercase text-bsoul-green-dark mb-1">Hydra Comfort</h3>
+        <p class="text-bsoul-primary text-xs font-medium tracking-widest uppercase">La crema trasformista</p>
+      </div>
+
+      <div class="text-center reveal hover-lift p-6 rounded-2xl">
+        <div class="h-48 flex items-end justify-center mb-5">
+          <img src="images/hydra-night-mask.png" alt="Hydra Night Mask" class="h-32 mx-auto" style="filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));">
+        </div>
+        <h3 class="font-belleza text-sm md:text-base tracking-wider uppercase text-bsoul-green-dark mb-1">Hydra Night Mask</h3>
+        <p class="text-bsoul-primary text-xs font-medium tracking-widest uppercase">Il prodotto "pigro"</p>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="w-20 h-[2px] bg-bsoul-primary/30 mx-auto mb-10"></div>
+
+    <!-- Certificazioni -->
+    <div class="text-center">
+      <p class="text-[0.75em] font-semibold tracking-[3px] uppercase text-bsoul-gray-light mb-8">Dalla parte dell'evidenza, da sempre</p>
+      <div class="flex justify-center items-center gap-10 md:gap-16 flex-wrap reveal">
+        <img src="images/cert-37.png" alt="AIAB Bio Eco Cosmesi" class="h-16 md:h-20 w-auto object-contain">
+        <img src="images/cert-38.png" alt="Claim Check" class="h-12 md:h-16 w-auto object-contain">
+        <img src="images/cert-39.png" alt="Vegan OK" class="h-14 md:h-18 w-auto object-contain">
+        <img src="images/cert-40.png" alt="Nickel Tested" class="h-14 md:h-18 w-auto object-contain">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 13: TRUST + STATS
+     ============================================================ -->
+<section class="py-20 md:py-28 px-6" style="background: radial-gradient(ellipse at 20% 80%, rgba(101,109,74,0.3) 0%, transparent 50%), #414833;">
+  <div class="max-w-2xl mx-auto text-center">
+    <div class="reveal">
+      <h3 class="font-semibold text-bsoul-primary text-[1.15em] leading-relaxed mb-8">
+        Tutti dicono di essere diversi o migliori. Come faccio a sapere se questa routine cosmetica va bene per me?
+      </h3>
+      <p class="text-white leading-[1.8] mb-4">
+        A supporto abbiamo <strong>4 diversi studi clinici indipendenti</strong>, oltre a numerose recensioni su Trustpilot e video testimonianze.
+      </p>
+      <p class="text-white leading-[1.8] mb-8">
+        Da sempre abbiamo scelto di non seguire il trend delle influencer, ma di usare <strong>clienti e donne comuni</strong> che davvero usano i prodotti.
+      </p>
+      <div class="w-24 h-[2px] bg-bsoul-primary mx-auto mb-8"></div>
+      <p class="text-white/80 leading-[1.8] mb-4">
+        Molti oggi promettono risultati veloci e a volte ci riescono, ma ogni volta altrettanto velocemente la pelle torna come prima, se non peggio!
+      </p>
+      <p class="text-bsoul-primary text-[1.1em] leading-[1.8] mb-4">
+        <strong>Il vero risultato si costruisce giorno dopo giorno</strong>, rispettando i tempi e il naturale equilibrio della pelle.
+      </p>
+      <p class="text-white/80 leading-[1.8]">
+        La pelle non cambia in un giorno, ma quando cambia davvero, <strong class="text-white">non torna piu' indietro</strong>.
+      </p>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto mt-16">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <div class="reveal">
+        <p class="stat-number text-bsoul-primary text-4xl md:text-5xl mb-1" data-target="800">0</p>
+        <p class="text-white/60 text-xs font-medium tracking-widest uppercase">Recensioni Trustpilot</p>
+      </div>
+      <div class="reveal">
+        <p class="stat-number text-bsoul-primary text-4xl md:text-5xl mb-1" data-target="770">0</p>
+        <p class="text-white/60 text-xs font-medium tracking-widest uppercase">A 5 stelle</p>
+      </div>
+      <div class="reveal">
+        <p class="stat-number text-bsoul-primary text-4xl md:text-5xl mb-1" data-target="4">0</p>
+        <p class="text-white/60 text-xs font-medium tracking-widest uppercase">Studi clinici indipendenti</p>
+      </div>
+      <div class="reveal">
+        <p class="stat-number text-bsoul-primary text-4xl md:text-5xl mb-1" data-target="13">0</p>
+        <p class="text-white/60 text-xs font-medium tracking-widest uppercase">Anni di fedelta' clienti</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 13b: RECENSIONI + VIDEO TESTIMONIANZE
+     ============================================================ -->
+<section class="bg-bsoul-cream py-20 md:py-28 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-14 reveal">
+      <p class="text-[0.75em] font-semibold tracking-[3px] uppercase text-bsoul-gray-light mb-3">Cosa dicono le nostre clienti</p>
+      <h2 class="font-belleza text-2xl md:text-[2.2rem] tracking-wide uppercase text-bsoul-green-dark">
+        Storie vere, risultati veri
+      </h2>
+    </div>
+
+    <!-- Video testimonianze — marquee automatico -->
+    <div class="relative mb-20">
+      <div class="video-marquee-wrapper overflow-hidden" style="-webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);">
+        <div class="video-marquee-track flex gap-5" id="videoMarquee">
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"La mia pelle e' rinata"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Finalmente un metodo che funziona"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Non pensavo potesse cambiare cosi'"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Le mie amiche mi chiedono cosa uso"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Ho eliminato 3 creme dalla routine"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"La consulente mi ha cambiato la vita"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"A 58 anni mi sento bellissima"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Dopo il primo mese vedevo gia' risultati"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Prodotti naturali che funzionano davvero"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Non tornerei mai indietro"</p></div>
+          <!-- Duplicati per loop continuo -->
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"La mia pelle e' rinata"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Finalmente un metodo che funziona"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Non pensavo potesse cambiare cosi'"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Le mie amiche mi chiedono cosa uso"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Ho eliminato 3 creme dalla routine"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"La consulente mi ha cambiato la vita"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"A 58 anni mi sento bellissima"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Dopo il primo mese vedevo gia' risultati"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Prodotti naturali che funzionano davvero"</p></div>
+          <div class="flex-shrink-0 w-[200px] md:w-[260px]"><div class="video-placeholder w-full aspect-[9/16] rounded-2xl"></div><p class="mt-3 text-xs text-bsoul-gray-text text-center italic">"Non tornerei mai indietro"</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recensioni reali Trustpilot — marquee -->
+    <div class="relative reveal">
+      <div class="overflow-hidden" style="-webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);">
+        <div class="reviews-marquee-track flex gap-5">
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Uso bSoul da pi&ugrave; di tre anni e la mia pelle sensibile ringrazia. Finalmente non ho pi&ugrave; la sensazione fastidiosa di pelle che tira."</p><p class="text-sm font-semibold text-bsoul-green-dark">Silvia Rossi</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Ho scoperto bSoul circa 5 anni fa, e ha davvero dato una svolta ai miei problemi di pelle che avevo da anni!"</p><p class="text-sm font-semibold text-bsoul-green-dark">Stefania Paoloni</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Ho conosciuto bSoul quando ero reduce di una dermatite periorale e ho assistito a una specie di miracolo."</p><p class="text-sm font-semibold text-bsoul-green-dark">Annamaria</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Uso i prodotti bSoul da 10 anni. Ho una pelle migliore adesso che ho 46 anni di quando ne avevo 25."</p><p class="text-sm font-semibold text-bsoul-green-dark">Blu</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Uso i prodotti bSoul da 4 anni e devo dire che sono tutti veramente ottimi, nessuno escluso."</p><p class="text-sm font-semibold text-bsoul-green-dark">Barbara Carinci</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Da anni uso questi prodotti fantastici. La mia pelle &egrave; cambiata: pi&ugrave; elastica, pi&ugrave; luminosa e anche qualche ruga &egrave; sparita."</p><p class="text-sm font-semibold text-bsoul-green-dark">Rita Venturino</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Dal 2018 sono fedelissima alla linea bSoul, ho reso la mia pelle sana e luminosa."</p><p class="text-sm font-semibold text-bsoul-green-dark">Lorena M.</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Ho iniziato ad usare i prodotti bSoul quasi 10 anni fa e sono ormai una cliente affezionata."</p><p class="text-sm font-semibold text-bsoul-green-dark">Silvia Vivian</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Il mio percorso con bSoul &egrave; iniziato 5 anni fa. La mia pelle ha ritrovato nuova vita."</p><p class="text-sm font-semibold text-bsoul-green-dark">Carlotta</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Uso i prodotti bSoul da circa 5 anni e mi trovo benissimo. Sono i primi e unici prodotti che non mi stancano."</p><p class="text-sm font-semibold text-bsoul-green-dark">Danja</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Utilizzo i prodotti bSoul da circa 1 anno con ottimi risultati per la mia pelle matura."</p><p class="text-sm font-semibold text-bsoul-green-dark">Jose Mascia</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Con bSoul ho trovato la soluzione ideale per la mia pelle. I prodotti sono ottimi."</p><p class="text-sm font-semibold text-bsoul-green-dark">Piera Mancini</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <!-- Duplicati per loop -->
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Uso bSoul da pi&ugrave; di tre anni e la mia pelle sensibile ringrazia. Finalmente non ho pi&ugrave; la sensazione fastidiosa di pelle che tira."</p><p class="text-sm font-semibold text-bsoul-green-dark">Silvia Rossi</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Ho scoperto bSoul circa 5 anni fa, e ha davvero dato una svolta ai miei problemi di pelle che avevo da anni!"</p><p class="text-sm font-semibold text-bsoul-green-dark">Stefania Paoloni</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Ho conosciuto bSoul quando ero reduce di una dermatite periorale e ho assistito a una specie di miracolo."</p><p class="text-sm font-semibold text-bsoul-green-dark">Annamaria</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Uso i prodotti bSoul da 10 anni. Ho una pelle migliore adesso che ho 46 anni di quando ne avevo 25."</p><p class="text-sm font-semibold text-bsoul-green-dark">Blu</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Uso i prodotti bSoul da 4 anni e devo dire che sono tutti veramente ottimi, nessuno escluso."</p><p class="text-sm font-semibold text-bsoul-green-dark">Barbara Carinci</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Da anni uso questi prodotti fantastici. La mia pelle &egrave; cambiata: pi&ugrave; elastica, pi&ugrave; luminosa e anche qualche ruga &egrave; sparita."</p><p class="text-sm font-semibold text-bsoul-green-dark">Rita Venturino</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Dal 2018 sono fedelissima alla linea bSoul, ho reso la mia pelle sana e luminosa."</p><p class="text-sm font-semibold text-bsoul-green-dark">Lorena M.</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Ho iniziato ad usare i prodotti bSoul quasi 10 anni fa e sono ormai una cliente affezionata."</p><p class="text-sm font-semibold text-bsoul-green-dark">Silvia Vivian</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Il mio percorso con bSoul &egrave; iniziato 5 anni fa. La mia pelle ha ritrovato nuova vita."</p><p class="text-sm font-semibold text-bsoul-green-dark">Carlotta</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Uso i prodotti bSoul da circa 5 anni e mi trovo benissimo. Sono i primi e unici prodotti che non mi stancano."</p><p class="text-sm font-semibold text-bsoul-green-dark">Danja</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Utilizzo i prodotti bSoul da circa 1 anno con ottimi risultati per la mia pelle matura."</p><p class="text-sm font-semibold text-bsoul-green-dark">Jose Mascia</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+
+          <div class="flex-shrink-0 w-[320px] bg-white rounded-2xl p-7"><div class="flex gap-1 mb-3"><span class="text-bsoul-primary">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div><p class="text-[0.95em] leading-[1.8] mb-3 italic">"Con bSoul ho trovato la soluzione ideale per la mia pelle. I prodotti sono ottimi."</p><p class="text-sm font-semibold text-bsoul-green-dark">Piera Mancini</p><p class="text-xs text-bsoul-gray-light">Verificata su Trustpilot</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Widget Trustindex -->
+    <div class="mt-14 reveal">
+      <script defer async src='https://cdn.trustindex.io/loader.js?973995548ba6556848263b87405'></script>
+    </div>
+
+    <!-- Link a tutte le recensioni -->
+    <div class="text-center mt-10 reveal">
+      <a href="#" class="text-bsoul-green-mid text-sm font-semibold tracking-widest uppercase hover:text-bsoul-green-dark transition-colors duration-300">
+        Leggi tutte le 800+ recensioni &rarr;
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 13c: RISULTATI CLINICI
+     ============================================================ -->
+<section class="bg-white py-24 md:py-32 px-6">
+  <div class="max-w-2xl mx-auto text-center mb-14">
+    <h2 class="reveal font-belleza text-2xl md:text-[2.2rem] tracking-wide uppercase text-bsoul-green-dark mb-8">
+      Risultati clinici
+    </h2>
+    <p class="reveal text-[1.1em] md:text-[1.25em] leading-[2]">
+      I miglioramenti constatati nella prima fase sono il risultato di un accurato sistema di monitoraggio clinico, effettuato su <strong class="text-bsoul-green-dark">40 donne tra i 35 e i 45 anni</strong> durante il corso di due mesi.
+    </p>
+  </div>
+
+  <!-- Slider immagini studi clinici -->
+  <div class="relative mb-14">
+    <div class="overflow-hidden" style="-webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);">
+      <div class="clinical-marquee-track flex gap-5">
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-28.png" alt="Riduzione indice rughe -15%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-29.png" alt="Riduzione profondità rughe -20%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-30.png" alt="Riduzione pH cutaneo -15%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-31.png" alt="Riduzione eritema -20%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-32.png" alt="Riduzione secrezione sebacea -15%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-33.png" alt="Miglioramento trama pelle +20%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-34.png" alt="Elasticità cutanea +15%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-35.png" alt="Idratazione profonda +25%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-36.png" alt="Idratazione superficiale +20%" class="w-full rounded-2xl"></div>
+        <!-- Duplicati per loop -->
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-28.png" alt="Riduzione indice rughe -15%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-29.png" alt="Riduzione profondità rughe -20%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-30.png" alt="Riduzione pH cutaneo -15%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-31.png" alt="Riduzione eritema -20%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-32.png" alt="Riduzione secrezione sebacea -15%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-33.png" alt="Miglioramento trama pelle +20%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-34.png" alt="Elasticità cutanea +15%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-35.png" alt="Idratazione profonda +25%" class="w-full rounded-2xl"></div>
+        <div class="flex-shrink-0 w-[250px] md:w-[300px]"><img src="images/studio-clinico-36.png" alt="Idratazione superficiale +20%" class="w-full rounded-2xl"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-xl mx-auto text-center">
+    <p class="reveal text-[1.1em] md:text-[1.25em] leading-[2] text-bsoul-green-dark font-medium">
+      Questi sono risultati reali e duraturi &mdash; non effetti temporanei che svaniscono dopo essersi lavate il viso.
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 14: IL PRIMO METODO + TEAM
+     ============================================================ -->
+<section class="bg-bsoul-cream py-20 md:py-28 px-6">
+  <div class="max-w-4xl mx-auto text-center">
+    <div class="reveal">
+      <h2 class="font-belleza text-xl md:text-2xl tracking-wide uppercase text-bsoul-green-dark mb-4 leading-relaxed">
+        Il Primo Metodo Cosmetico Naturale<br>Studiato Per La Donna In Menopausa
+      </h2>
+      <a href="https://bsoul.it/la-storia-di-martina-bindi/" class="text-bsoul-green-mid text-xs font-semibold tracking-widest uppercase hover:text-bsoul-green-dark transition-colors duration-300">Leggi la storia +</a>
+    </div>
+    <div class="reveal mt-12">
+      <img src="https://images.unsplash.com/photo-1543269664-56d93c1b41a6?w=1200&q=80" alt="Team bSoul" class="w-full max-w-3xl mx-auto aspect-[16/9] object-cover rounded-2xl">
+    </div>
+  </div>
+</section>
+
+
+
+
+<!-- ============================================================
+     SEZIONE 16: BANNER VITA IN SURFACE
+     ============================================================ -->
+<section class="py-24 md:py-32 px-6 relative overflow-hidden" style="background: radial-gradient(ellipse at 30% 50%, rgba(101,109,74,0.4) 0%, transparent 60%), #414833;">
+  <div class="relative max-w-3xl mx-auto text-center">
+    <h2 class="font-belleza text-3xl md:text-4xl tracking-widest uppercase text-white leading-relaxed" style="text-shadow: 0 2px 20px rgba(0,0,0,0.3);">
+      Vita pi&ugrave; semplice,<br>pelle pi&ugrave; bella
+    </h2>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 17: PRODOTTI CTA
+     ============================================================ -->
+<section class="bg-bsoul-cream py-20 md:py-28 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex flex-col md:flex-row items-center gap-10 md:gap-16">
+      <div class="flex-1 reveal">
+        <h2 class="font-belleza text-2xl md:text-3xl tracking-wide uppercase text-bsoul-green-dark mb-6 leading-relaxed">
+          Il primo passo su salute<br>per rigenerare la tua pelle
+        </h2>
+        <p class="leading-[1.8] mb-4">
+          Un trattamento serio, che non promette miracoli, ma risultati. L'obiettivo della tua pelle e' l'equilibrio.
+        </p>
+        <p class="leading-[1.8] mb-4">
+          Provare una crema non e' risolvere un problema: vuol dire mettere un cerotto. Il nostro approccio restituisce alla pelle la capacita' di lavorare per se stessa.
+        </p>
+        <p class="leading-[1.8] mb-8">
+          E' solo il primo step: riportando la pelle in equilibrio, tutte le fasi successive diventano esponenzialmente piu' efficaci.
+        </p>
+        <a href="#contatto" class="bsoul-btn">Inizia il tuo percorso</a>
+      </div>
+      <div class="flex-1 reveal">
+        <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=640&q=80" alt="Prodotti cosmetici naturali" class="w-full aspect-[4/5] object-cover rounded-2xl">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 18: LA TUA ESPERIENZA
+     ============================================================ -->
+<section class="bg-bsoul-green-mid py-16 md:py-20 px-6">
+  <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-center gap-8">
+    <div class="text-white font-belleza text-2xl tracking-widest">bSoul</div>
+    <h2 class="font-belleza text-xl md:text-2xl tracking-widest uppercase text-white leading-relaxed text-center md:text-left">
+      La tua esperienza<br>con bSoul
+    </h2>
+  </div>
+</section>
+
+
+
+
+<!-- ============================================================
+     SEZIONE 20: MARTINA
+     ============================================================ -->
+<section class="bg-bsoul-cream py-20 md:py-28 px-6">
+  <div class="max-w-2xl mx-auto text-center">
+    <p class="text-[0.75em] font-semibold tracking-[3px] uppercase text-bsoul-gray-light mb-8">La Fondatrice</p>
+    <div class="reveal">
+      <p class="leading-[1.9] mb-4">
+        Il mio nome e' <strong class="text-bsoul-green-dark">Martina Bindi</strong>, sono un'estetista professionista con lunga esperienza alle spalle, il desiderio di conoscere tutto cio' che riguarda la bellezza e la cura della pelle.
+      </p>
+      <p class="leading-[1.9] mb-4">
+        Formulando i prodotti e le routine bSoul ho messo in campo le mie <strong class="text-bsoul-green-dark">conoscenze scientifiche</strong> e la mia <strong class="text-bsoul-green-dark">esperienza diretta</strong> con tantissimi prodotti e trattamenti.
+      </p>
+      <p class="leading-[1.9] mb-4">
+        Mettere tutto cio' a disposizione delle altre donne e' stata la mia <strong class="text-bsoul-green-dark">rivincita</strong> piu' grande.
+      </p>
+      <p class="leading-[1.9] mb-4">
+        Perche' quando la pelle sta bene davvero, il cambiamento non e' solo visibile: si sente.
+      </p>
+      <p class="leading-[1.9]">
+        E cambia anche il modo in cui ti guardi.
+      </p>
+    </div>
+    <div class="reveal mt-12">
+      <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800&q=80" alt="Martina Bindi" class="w-full max-w-md mx-auto aspect-[4/3] object-cover rounded-2xl">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 21: CTA FINALE
+     ============================================================ -->
+<section class="bg-white py-20 md:py-28 px-6">
+  <div class="max-w-xl mx-auto text-center">
+    <div class="reveal">
+      <h2 class="font-belleza text-xl md:text-2xl tracking-wide uppercase text-bsoul-green-dark leading-relaxed mb-6">
+        Pronta per liberarti dalla continua ricerca del prodotto perfetto che, puntualmente, ti delude?
+      </h2>
+      <p class="text-[1.1em] leading-[1.8] mb-8">
+        E' il momento di ottenere la routine che ha gia' cambiato la pelle di tantissime donne, in modo naturale.
+      </p>
+      <a href="#contatto" class="bsoul-btn">Inizia da qui</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 22: CONTATTO / TYPEFORM
+     ============================================================ -->
+<section id="contatto" class="bg-bsoul-cream py-16 md:py-20 px-6">
+  <div class="max-w-lg mx-auto text-center">
+    <div class="reveal">
+      <p class="text-[0.75em] font-semibold tracking-[3px] uppercase text-bsoul-gray-light mb-3">Preferisci essere contattata per avere piu' informazioni?</p>
+      <p class="font-semibold text-bsoul-green-dark mb-8">Siamo felici di rispondere a tutte le tue domande:</p>
+      <div class="typeform-box text-white">
+        <p class="font-belleza text-xl tracking-widest mb-6">bSoul</p>
+        <div class="w-10 h-[1px] bg-white/30 mx-auto mb-6"></div>
+        <p class="leading-relaxed mb-6">
+          Rispondi a poche domande: una Beauty Expert bSoul ti aiutera' a capire da dove partire con consigli pratici su misura.
+        </p>
+        <a href="#" class="bsoul-btn bsoul-btn-light mb-3">Inizia</a>
+        <p class="text-white/60 text-xs mt-3">Richiede 3 minuti</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SEZIONE 23: ASSISTENZA
+     ============================================================ -->
+<section class="bg-white py-12 md:py-16 px-6">
+  <div class="max-w-2xl mx-auto text-center">
+    <p class="text-[0.75em] font-semibold tracking-[3px] uppercase text-bsoul-gray-light mb-4">Un mondo di bellezza a tua disposizione</p>
+    <h3 class="font-semibold text-bsoul-green-dark text-lg mb-1">Hai bisogno di aiuto?</h3>
+    <p class="text-bsoul-gray-text text-sm mb-6">Il nostro team e' a tua disposizione!</p>
+    <div class="space-y-3 text-sm">
+      <p>
+        <strong class="text-bsoul-green-mid">344 1845800</strong>: Assistenza WhatsApp per logistica, ordini e sito
+        <span class="text-bsoul-gray-light text-xs">(solo messaggi scritti e vocali)</span>
+      </p>
+      <p>
+        <strong class="text-bsoul-green-mid">327 3144258</strong>: Analisi della pelle WhatsApp con Serena
+        <span class="text-bsoul-gray-light text-xs">(solo messaggi scritti e vocali)</span>
+      </p>
+      <p>
+        <strong class="text-bsoul-green-mid">0572 520961</strong>: Servizio telefonico clienti
+        <span class="text-bsoul-gray-light text-xs">— lunedi'/venerdi' — 9:00-16:00</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="bg-bsoul-green-dark text-white/70 py-12 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+      <div>
+        <p class="text-white font-semibold text-xs tracking-widest uppercase mb-4">Assistenza clienti</p>
+        <div class="space-y-2">
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Contatti</a></p>
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Assistenza clienti</a></p>
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Domande frequenti</a></p>
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Spedizioni</a></p>
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Metodi di Pagamento</a></p>
+        </div>
+      </div>
+      <div>
+        <p class="text-white font-semibold text-xs tracking-widest uppercase mb-4">Scopri bSoul</p>
+        <div class="space-y-2">
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Inizia con bSoul</a></p>
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Scopri Martina Bindi</a></p>
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Blog</a></p>
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Iscriviti alla Newsletter</a></p>
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Dillo a un'amica</a></p>
+        </div>
+      </div>
+      <div>
+        <p class="text-white font-semibold text-xs tracking-widest uppercase mb-4">Info</p>
+        <div class="space-y-2">
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Centri selezionati bSoul</a></p>
+          <p><a href="#" class="hover:text-bsoul-primary transition-colors">Certificazioni</a></p>
+        </div>
+      </div>
+      <div>
+        <p class="text-white font-semibold text-xs tracking-widest uppercase mb-4">bSoul Cosmetici Naturali</p>
+        <div class="space-y-1 text-xs text-white/50">
+          <p>Progetto Globale SRL</p>
+          <p>CF / P.Iva IT01613840477</p>
+          <p>Via Risorgimento, 661/b 51015</p>
+          <p>Monsummano Terme (PT)</p>
+          <p>Tel: +39 0572 520961</p>
+          <p>Email: info@bsoul.it</p>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-white/10 mt-10 pt-6 text-center text-xs text-white/40">
+      <p>Copyright 2026 &copy; bSoul &nbsp;|&nbsp; Privacy Policy &nbsp;|&nbsp; Cookie Policy &nbsp;|&nbsp; Termini e Condizioni</p>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ============================================================
+     GSAP ANIMATIONS
+     ============================================================ -->
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// === REVEAL ANIMATIONS ===
+document.querySelectorAll('.reveal').forEach(el => {
+  gsap.fromTo(el,
+    { opacity: 0, y: 30 },
+    {
+      opacity: 1, y: 0,
+      duration: 0.7,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 85%', once: true }
+    }
+  );
+});
+
+// === REVEAL LEFT (slide from left) ===
+document.querySelectorAll('.reveal-left').forEach(el => {
+  gsap.fromTo(el,
+    { opacity: 0, x: -60 },
+    {
+      opacity: 1, x: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 80%', once: true }
+    }
+  );
+});
+
+// === REVEAL RIGHT (slide from right) ===
+document.querySelectorAll('.reveal-right').forEach(el => {
+  gsap.fromTo(el,
+    { opacity: 0, x: 60 },
+    {
+      opacity: 1, x: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 80%', once: true }
+    }
+  );
+});
+
+// === REVEAL SCALE (zoom in) ===
+document.querySelectorAll('.reveal-scale').forEach(el => {
+  gsap.fromTo(el,
+    { opacity: 0, scale: 0.92 },
+    {
+      opacity: 1, scale: 1,
+      duration: 1,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 85%', once: true }
+    }
+  );
+});
+
+// === WORD-BY-WORD REVEAL ===
+document.querySelectorAll('.reveal-words').forEach(el => {
+  const html = el.innerHTML;
+  // Split text while preserving HTML tags intact
+  const parts = html.split(/(<[^>]+>)/);
+  el.innerHTML = parts.map(part => {
+    if (part.startsWith('<')) return part; // HTML tag — keep as-is
+    // Split text into words
+    return part.split(/(\s+)/).map(w => {
+      if (w.trim() === '') return w;
+      return `<span class="word">${w}</span>`;
+    }).join('');
+  }).join('');
+
+  const wordEls = el.querySelectorAll('.word');
+  gsap.fromTo(wordEls,
+    { opacity: 0, y: 20 },
+    {
+      opacity: 1, y: 0,
+      duration: 0.4,
+      stagger: 0.03,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 75%', once: true }
+    }
+  );
+});
+
+// === STAGGER per grids ===
+document.querySelectorAll('.grid').forEach(grid => {
+  const items = grid.querySelectorAll('.reveal');
+  if (items.length > 1) {
+    gsap.fromTo(items,
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1, y: 0,
+        duration: 0.5,
+        stagger: 0.15,
+        ease: 'power2.out',
+        scrollTrigger: { trigger: grid, start: 'top 80%', once: true }
+      }
+    );
+  }
+});
+
+// === MOSAIC stagger ===
+const mosaicItems = document.querySelectorAll('.mosaic-img');
+gsap.fromTo(mosaicItems,
+  { opacity: 0, scale: 0.9 },
+  {
+    opacity: 1, scale: 1,
+    duration: 0.5,
+    stagger: 0.1,
+    ease: 'power2.out',
+    scrollTrigger: { trigger: mosaicItems[0]?.parentElement, start: 'top 80%', once: true }
+  }
+);
+
+// === PAIN BULLETS stagger ===
+const painBullets = document.querySelectorAll('.pain-bullet');
+if (painBullets.length) {
+  gsap.fromTo(painBullets,
+    { opacity: 0, x: -20 },
+    {
+      opacity: 1, x: 0,
+      duration: 0.4,
+      stagger: 0.15,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: painBullets[0], start: 'top 85%', once: true }
+    }
+  );
+}
+
+// === KIT DECOMPOSITION ===
+const kitSection = document.querySelector('.kit-section');
+if (kitSection) {
+  const kitTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: kitSection,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 0.6,
+    }
+  });
+
+  kitTl.to('.kit-full', {
+    opacity: 0,
+    scale: 1.08,
+    duration: 0.4,
+    ease: 'power2.inOut'
+  });
+
+  kitTl.fromTo('.product-single',
+    { opacity: 0, scale: 0.5 },
+    {
+      opacity: 1, scale: 1,
+      duration: 0.35,
+      stagger: 0.08,
+      ease: 'power2.out'
+    },
+    '-=0.2'
+  );
+
+  kitTl.to('.product-label', {
+    opacity: 1,
+    duration: 0.2,
+    stagger: 0.05,
+    ease: 'power2.out'
+  });
+
+  gsap.to('.scroll-hint', {
+    opacity: 0,
+    scrollTrigger: {
+      trigger: kitSection,
+      start: 'top 80%',
+      end: 'top 40%',
+      scrub: true
+    }
+  });
+}
+
+// === COUNTER ANIMATION ===
+document.querySelectorAll('.stat-number[data-target]').forEach(el => {
+  const target = parseInt(el.dataset.target);
+  gsap.fromTo(el,
+    { innerText: 0 },
+    {
+      innerText: target,
+      duration: 2,
+      ease: 'power2.out',
+      snap: { innerText: 1 },
+      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+      onUpdate: function() {
+        const val = Math.round(this.targets()[0].innerText);
+        el.innerText = target >= 100 ? val + '+' : val;
+      }
+    }
+  );
+});
+
+// === 3-STEP TIMELINE FILL ===
+const timelineFill = document.getElementById('timelineFill');
+if (timelineFill) {
+  gsap.to(timelineFill, {
+    width: '100%',
+    ease: 'none',
+    scrollTrigger: {
+      trigger: timelineFill.closest('section'),
+      start: 'top 60%',
+      end: 'bottom 40%',
+      scrub: 0.5
+    }
+  });
+}
+</script>
+
+</body>
+</html>
